@@ -3,3 +3,9 @@
 2. Prepare the transformed dataset into binary format from numpy array, in `mnv2` directory, 
     run `prepare_cali_dataset.py`
 3. Evaluate model performance under pytorch, run `eval_pytorch.py` 
+Hard to export to pytorch model to tensorflow lite model
+~4. Export tflite model with both the floating point and quantized version, `export_tflite.py`~
+~5. Evaluate tflite model~
+4. Export onnx model, run `export_onnx.py`
+5. With onnx model, export tensorrt model, run `export_tensorrt.py` with default quantization strategy
+6. Evaluate tensorrt default quantization performance.
