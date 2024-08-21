@@ -1,3 +1,4 @@
+import time
 from tqdm import tqdm
 
 import torch
@@ -18,6 +19,7 @@ def evaluate_pytorch_model(model_path="weights/mobilev2_model.pth"):
     )
 
     running_corrects = 0.0
+    start = time.time()
     for _, (inputs, labels) in tqdm(enumerate(dataloaders)):
         inputs = inputs.cuda()
         labels = labels.cuda()
@@ -26,7 +28,8 @@ def evaluate_pytorch_model(model_path="weights/mobilev2_model.pth"):
         running_corrects += torch.sum(preds == labels.data)
     
     print(f"PyTorch Model Accuracy : {running_corrects / len(val_dataset) * 100}%")
-
+    end = time.time()
+    print(f"Total time for PyTorch Model for {len(val_dataset)} images is {end - start}")
 
 if __name__ == "__main__":
     evaluate_pytorch_model()
