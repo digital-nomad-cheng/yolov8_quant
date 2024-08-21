@@ -13,7 +13,7 @@ import pycuda.autoinit
 from config import DIR_VAL
 
 # 200 classes in total
-IMGS_PER_CLS = 10
+IMGS_PER_CLS = 1
 TOTAL_CLS_USED = 200
 
 def preprocess(img):

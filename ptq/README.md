@@ -6,12 +6,24 @@
 4. Export onnx model, run `export_onnx.py`
 5. With onnx model, export tensorrt model, run `export_tensorrt.py` with default quantization strategy
 6. Evaluate tensorrt default quantization performance.
-
+7. Use dirpoorlet to calibrate 
+    ```
+    python -m torch.distributed.launch --use_env -m dipoorlet -M MODEL_PATH -I INPUT_PATH -N PIC_NUM -A [mse, hist, minmax] -D [trt, snpe, rv, atlas, ti, stpu] [--bc] [--adaround] [--brecq] [--drop]
+    ```
+    + MSE Strategy
+      ```
+      python -m torch.distributed.launch --nproc_per_node 1 --use_env -m dipoorlet -I dipoorlet_work_dir/ -N 200 -D trt -M weights/mnv2.onnx -A mse -D trt -O mse_result
+      ```
+8. Write new trt engine file with generated parameters from dipoorlet
+    ```
+    python export_tensorrt_dipoorlet.py
+    ```
+9. Evaluate new trt engine performance
 
 
 | Strategy   | Acc   | Time for 10000 images |
 |------------|------------|------------------|
 | PyTorch | 67.5%|25.82s|
-| TensorRT| 64.88%|16.13s|
-| Dipoorlet| | |
-
+| TensorRT KL int8| 64.88%|28.74s|
+| Dipoorlet MSE int8| 66.4%| |
+| Dipoorlet MSE+Brecq|
