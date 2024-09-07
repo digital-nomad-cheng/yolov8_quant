@@ -32,7 +32,18 @@
    ```
 2. Export yolov8n.onnx model file.
 3. Evaluate onnx model performance on coco evaluation dataset.
-4. 
+   ```
+   python eval_onnx.py
+   ```
+4. Build tensorrt engine file with default quantization strategy.
+    ```
+    python export_tensorrt.py
+    ```
+5. Evaluate tensorrt engine file performance.
+    ```
+    python eval_tensorrt.py
+    ```
+6. 
 
 onnx(float32)
 0.35898

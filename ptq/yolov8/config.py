@@ -1,5 +1,6 @@
 
 onnx_model_path = "/workspace/ptq/yolov8/weights/yolov8n.onnx"
+tensorrt_model_path = "/workspace/ptq/yolov8/weights/yolov8n_int8.engine"
 coco_val_path = "/workspace/ptq/datasets/coco2017/val2017"
 coco_anno_file = "/workspace/ptq/datasets/coco2017/annotations/instances_val2017.json"
 
@@ -22,6 +23,7 @@ info = {
     "outputs_name" : ["output0"],
     "input_width": 640,
     "input_height": 640,
+    "output_shape": (1, 84, 8400),
     "confidence_thres": 0.001,
     "iou_thres": 0.7,
     "max_det": 300,
