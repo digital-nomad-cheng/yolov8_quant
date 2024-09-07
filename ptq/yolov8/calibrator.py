@@ -21,19 +21,6 @@ def get_calib_data_path(data_root, num_samples=1024):
         if cnt == num_samples:
             break
     return img_paths
-    
-
-def preprocess(img_path, info):
-    img = cv2.imread(img_path)
-    img_height, img_width = img.shape[:2]
-    info.update({"img_height": img_height, "img_width": img_width})
-    img = util.letter_box(img, (info["input_width"], info["input_height"]))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    img = np.array(img) / 255.0
-    img = np.transpose(img, (2, 0, 1))
-    img = np.expand_dims(img, axis=0).astype(np.float32)
-    return img   
-
 
 # For TRT
 class TRTCalibDataLoader:
@@ -55,7 +42,7 @@ class TRTCalibDataLoader:
         if self.index < self.calib_count:
             for i in range(self.batch_size):
                 image_path = self.image_list[i + self.index * self.batch_size]
-                image = preprocess(image_path, self.info)
+                image = util.preprocess(image_path, self.info)
                 self.calibration_data[i] = image
             self.index += 1
             return np.ascontiguousarray(self.calibration_data, dtype=np.float32)
