@@ -28,7 +28,8 @@
     
 ## YOLOv8n on coco-2017-val
 1. Download COCO 2017 validation dataset:
-   ```bash download_coco17_val.sh
+   ```
+   bash download_coco17_val.sh
    ```
 2. Export yolov8n.onnx model file.
 3. Evaluate onnx model performance on coco evaluation dataset.
@@ -43,12 +44,30 @@
     ```
     python eval_tensorrt.py
     ```
-6. Table for performance comparison
+6. Use dirpoorlet to calibrate 
+    ```
+    python -m torch.distributed.launch --nproc_per_node 1 --use_env -m dipoorlet -I dipoorlet_work_dir/ -N 1024 -D trt -M weights/yolov8n.onnx -A mse -D trt -O yolov8n_mse
+    ```
+7. Write new trt engine file with generated parameters from dipoorlet
+    ```
+    python export_tensorrt_dipoorlet.py
+    ```
+8. Evaluate new trt engine performance
+    ```
+    ```
+6. Table for performance comparison, due to the long time of calibration, I only use 10 images for calibration to produce the table below. 
+    Time is measured on 5000 evaluation images.
+    | Model | Backend | Quantization Method | MAP | Inference Time |
+    |-------|---------|---------|----------------|-----------------|
+    | YOLOv8n | ONNX | float32 | 0.35898 | 468.6s |
+    | YOLOv8n | TensorRT | KL int8 | 0.31587 | 457.1s |
+    | YOLOv8n | TensorRT | MSE int8 | 0.35286 | 330.2 |
 
-| Model | Backend | Quantization Method | MAP | Inference Time |
-|-------|---------|---------|----------------|
-| YOLOv8n | ONNX | - | 0.35898 | 468.6s |
-| YOLOv8n | TensorRT | KL int8 | 0.31587 | 457.1s |
-| YOLOv8n | TensorRT | Brecq int8 | 0.35898 | 0.35898 |
-onnx(float32)
-0.35898
+    We can see from the table that even with 10 images, the MSE quantization strategy can already improve the performance of the model that than the default KL strategy.
+    With more calibration images, the performance of MSE strategy will be even better.
+
+## Reference
+1. onnxruntime-gpu cannot find CUDAProvider: install onnxruntime-gpu from:
+    ```
+    pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+    ```

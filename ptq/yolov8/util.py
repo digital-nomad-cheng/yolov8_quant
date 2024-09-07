@@ -1,7 +1,20 @@
 import cv2
+import numpy as np
 
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+
+
+def preprocess(img_path, info):
+    img = cv2.imread(img_path)
+    img_height, img_width = img.shape[:2]
+    info.update({"img_height": img_height, "img_width": img_width})
+    img = letter_box(img, (info["input_width"], info["input_height"]))
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img = np.array(img) / 255.0
+    img = np.transpose(img, (2, 0, 1))
+    img = np.expand_dims(img, axis=0).astype(np.float32)
+    return img   
 
 def letter_box(img, new_shape):
     """LetterBox transform image to new_shape while 
