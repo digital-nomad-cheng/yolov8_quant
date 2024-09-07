@@ -3,9 +3,9 @@ from loguru import logger
 from abc import abstractmethod, ABCMeta
 import cv2
 
-from onnx_backend import load_onnx_model, run_onnx_model
-from tensorrt_backend import load_tensorrt_model, run_tensorrt_model
-
+# from onnx_backend import load_onnx_model, run_onnx_model
+# from tensorrt_backend import load_tensorrt_model, run_tensorrt_model
+from hidet_backend import load_hidet_model, run_hidet_model
 
 class Infer(metaclass=ABCMeta):
     """
@@ -25,6 +25,9 @@ class Infer(metaclass=ABCMeta):
         elif self.backend == "tensorrt":
             self.infer_model_func = run_tensorrt_model
             self.load_model_func = load_tensorrt_model
+        elif self.backend == "hidet":
+            self.infer_model_func = run_hidet_model
+            self.load_model_func = load_hidet_model
         else:
             raise Exception(f"Not supported {self.backend} backend.")
 
