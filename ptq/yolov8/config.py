@@ -1,6 +1,8 @@
 
 onnx_model_path = "/workspace/ptq/yolov8/weights/yolov8n.onnx"
 tensorrt_model_path = "/workspace/ptq/yolov8/weights/yolov8n_int8.engine"
+tensorrt_dipoorlet_model_path = "/workspace/ptq/yolov8/weights/yolov8n_dipoorlet_int8.engine"
+
 coco_val_path = "/workspace/ptq/datasets/coco2017/val2017/"
 coco_anno_file = "/workspace/ptq/datasets/coco2017/annotations/instances_val2017.json"
 dipoorlet_cali_dataset_path = "/workspace/ptq/yolov8/dipoorlet_work_dir/input.1/"
