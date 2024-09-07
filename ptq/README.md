@@ -19,11 +19,9 @@
     python export_tensorrt_dipoorlet.py
     ```
 9. Evaluate new trt engine performance
-
-
-| Strategy   | Acc   | Time for 10000 images |
-|------------|------------|------------------|
-| PyTorch | 67.5%|25.82s|
-| TensorRT KL int8| 64.88%|28.74s|
-| Dipoorlet MSE int8| 66.4%| |
-| Dipoorlet MSE+Brecq|
+    | Strategy   | Acc   | Time for 10000 images |
+    |------------|------------|------------------|
+    | PyTorch | 67.5%|25.82s|
+    | TensorRT KL int8| 64.88%|28.74s|
+    | Dipoorlet MSE int8| 66.4%| |
+    | Dipoorlet MSE+Brecq|
