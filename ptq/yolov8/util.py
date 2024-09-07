@@ -1,5 +1,8 @@
 import cv2
 
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
+
 def letter_box(img, new_shape):
     """LetterBox transform image to new_shape while 
     keeping the aspect ratio.
@@ -24,3 +27,12 @@ def letter_box(img, new_shape):
         img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=(114, 114, 114)
     )  # add border
     return img
+
+def print_coco_map(anno_json, pred_json):
+    anno = COCO(anno_json)
+    pred = COCO(pred_json)
+    eval = COCOeval(anno, pred, 'bbox')
+    eval.evaluate()
+    eval.accumulate()
+    eval.summarize()
+

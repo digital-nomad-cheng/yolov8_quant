@@ -43,7 +43,12 @@
     ```
     python eval_tensorrt.py
     ```
-6. 
+6. Table for performance comparison
 
+| Model | Backend | Quantization Method | MAP | Inference Time |
+|-------|---------|---------|----------------|
+| YOLOv8n | ONNX | - | 0.35898 | 468.6s |
+| YOLOv8n | TensorRT | KL int8 | 0.31587 | 457.1s |
+| YOLOv8n | TensorRT | Brecq int8 | 0.35898 | 0.35898 |
 onnx(float32)
 0.35898

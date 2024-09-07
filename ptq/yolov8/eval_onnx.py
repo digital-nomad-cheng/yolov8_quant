@@ -2,9 +2,12 @@ from loguru import logger
 from pycocotools.coco import COCO
 import os
 import json
+import time
 
 import config
 from det_infer import DetInfer
+import util
+
 
 # Load model, initialize inference engine
 det_infer = DetInfer(config.onnx_model_path, "onnx")
@@ -26,6 +29,7 @@ image_ids = coco.getImgIds()
 images = coco.loadImgs(image_ids)
 
 
+t_start = time.time()
 ann_idx = 0
 for img_idx in range(len(images)):
 
@@ -54,6 +58,11 @@ for img_idx in range(len(images)):
             }
         )
         ann_idx += 1
+t_end = time.time()
+logger.info(f"onnx inference time: {t_end - t_start} for {len(images)} images.")
 
-with open("./res.json", "w") as fp_out:
+with open("./onnx_res.json", "w") as fp_out:
     json.dump(detection_out_dict, fp_out, ensure_ascii=False, indent=4)
+
+
+util.print_coco_map(config.coco_anno_file, "./onnx_res.json")
