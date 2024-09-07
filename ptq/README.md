@@ -59,9 +59,9 @@
     Time is measured on 5000 evaluation images.
     | Model | Backend | Quantization Method | MAP | Inference Time |
     |-------|---------|---------|----------------|-----------------|
-    | YOLOv8n | ONNX | float32 | 0.35898 | 468.6s |
-    | YOLOv8n | TensorRT | KL int8 | 0.31587 | 457.1s |
-    | YOLOv8n | TensorRT | MSE int8 | 0.35286 | 330.2 |
+    | YOLOv8n | ONNX | float32 | 0.35898 | 356.8s |
+    | YOLOv8n | TensorRT | KL int8 | 0.31587 | 329.0s |
+    | YOLOv8n | TensorRT | MSE int8 | 0.35286 | 330.2s |
 
     We can see from the table that even with 10 images, the MSE quantization strategy can already improve the performance of the model that than the default KL strategy.
     With more calibration images, the performance of MSE strategy will be even better.
