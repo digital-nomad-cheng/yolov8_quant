@@ -25,3 +25,14 @@
     | TensorRT KL int8| 64.88%|28.74s|
     | Dipoorlet MSE int8| 66.4%| |
     | Dipoorlet MSE+Brecq|
+    
+## YOLOv8n on coco-2017-val
+1. Download COCO 2017 validation dataset:
+   ```bash download_coco17_val.sh
+   ```
+2. Export yolov8n.onnx model file.
+3. Evaluate onnx model performance on coco evaluation dataset.
+4. 
+
+onnx(float32)
+0.35898
