@@ -28,7 +28,8 @@
     
 ## YOLOv8n on coco-2017-val
 1. Download COCO 2017 validation dataset:
-   ```bash download_coco17_val.sh
+   ```
+   bash download_coco17_val.sh
    ```
 2. Export yolov8n.onnx model file.
 3. Evaluate onnx model performance on coco evaluation dataset.
@@ -44,11 +45,9 @@
     python eval_tensorrt.py
     ```
 6. Table for performance comparison
+    | Model | Backend | Quantization Method | MAP | Inference Time |
+    |-------|---------|---------|----------------|-----------------|
+    | YOLOv8n | ONNX | float32 | 0.35898 | 468.6s |
+    | YOLOv8n | TensorRT | KL int8 | 0.31587 | 457.1s |
+    | YOLOv8n | TensorRT | Brecq int8 | 0.35898 | 0.35898 |
 
-| Model | Backend | Quantization Method | MAP | Inference Time |
-|-------|---------|---------|----------------|
-| YOLOv8n | ONNX | - | 0.35898 | 468.6s |
-| YOLOv8n | TensorRT | KL int8 | 0.31587 | 457.1s |
-| YOLOv8n | TensorRT | Brecq int8 | 0.35898 | 0.35898 |
-onnx(float32)
-0.35898
