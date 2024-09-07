@@ -44,10 +44,28 @@
     ```
     python eval_tensorrt.py
     ```
+6. Use dirpoorlet to calibrate 
+    ```
+    python -m torch.distributed.launch --nproc_per_node 1 --use_env -m dipoorlet -I dipoorlet_work_dir/ -N 1024 -D trt -M weights/yolov8n.onnx -A mse -D trt -O yolov8n_mse
+    ```
+7. Write new trt engine file with generated parameters from dipoorlet
+    ```
+    python export_tensorrt_dipoorlet.py
+    ```
+8. Evaluate new trt engine performance
+    ```
+    ```
 6. Table for performance comparison
     | Model | Backend | Quantization Method | MAP | Inference Time |
     |-------|---------|---------|----------------|-----------------|
     | YOLOv8n | ONNX | float32 | 0.35898 | 468.6s |
     | YOLOv8n | TensorRT | KL int8 | 0.31587 | 457.1s |
-    | YOLOv8n | TensorRT | Brecq int8 | 0.35898 | 0.35898 |
+    | YOLOv8n | TensorRT | MSE int8 | 0.35898 | 0.35898 |
 
+
+
+## Reference
+1. onnxruntime-gpu cannot find CUDAProvider: install onnxruntime-gpu from:
+    ```
+    pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+    ```
