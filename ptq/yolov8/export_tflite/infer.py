@@ -8,7 +8,7 @@ import glob
 import os
 import utils
 from tqdm import tqdm
-
+import json
 
 class Infer:
     def __init__(self, saved_model_path, mode="int8",input_sizes=(640, 640)):
@@ -118,14 +118,19 @@ if __name__ == "__main__":
     # Process all images in a directory
     image_paths = glob.glob("/home/vincent/Work/model_optimization/yolov8_quant/ptq/datasets/coco2017/val2017/*.jpg")
     annotations_file = "/home/vincent/Work/model_optimization/yolov8_quant/ptq/datasets/coco2017/annotations/instances_val2017.json"
+    # image_paths = glob.glob("/media/vincent/FAFC59F8FC59B01D/datasets/coco16/images/train2017/*.jpg")
+    # annotations_file = "/media/vincent/FAFC59F8FC59B01D/datasets/coco16/annotations/instances_train2017.json"
     
+    with open(annotations_file, "r") as fp_gt:
+        gt_data = json.load(fp_gt)
+    print(gt_data["categories"])
     coco = utils.load_coco_annotations(annotations_file)
     all_detections = []
     for image_path in tqdm(image_paths):
         image_id = int(os.path.basename(image_path).split('.')[0])
         boxes, class_ids, confidences = infer.infer(image_path, visualize=True)
         infer.visualize_output(image_path, boxes, class_ids, confidences, save_img=True)
-        coco_detections = utils.convert_to_coco_format(image_id, boxes, class_ids, confidences)
+        coco_detections = utils.convert_to_coco_format(image_id, boxes, class_ids, confidences, gt_data["categories"])
         all_detections.extend(coco_detections)
     
     metrics = utils.calculate_coco_metrics(coco, all_detections)
