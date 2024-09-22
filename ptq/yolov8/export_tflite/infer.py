@@ -51,7 +51,7 @@ class Infer:
     
     # Function to preprocess the image
     def preprocess_image(self, image_path):
-        image = Image.open(image_path)
+        image = Image.open(image_path).convert("RGB")
         self.original_size = image.size
         image = image.resize(self.input_sizes)  # Resize to model input size
         image_array = np.array(image).astype(np.float32)
@@ -116,8 +116,8 @@ class Infer:
 if __name__ == "__main__":
     infer = Infer("onnx2tf_yolov8n_saved_model", mode="int8")
     # Process all images in a directory
-    image_paths = glob.glob("/media/vincent/FAFC59F8FC59B01D/datasets/coco16/images/train2017/*.jpg")
-    annotations_file = "/media/vincent/FAFC59F8FC59B01D/datasets/coco16/instances_train2017.json"
+    image_paths = glob.glob("/home/vincent/Work/model_optimization/yolov8_quant/ptq/datasets/coco2017/val2017/*.jpg")
+    annotations_file = "/home/vincent/Work/model_optimization/yolov8_quant/ptq/datasets/coco2017/annotations/instances_val2017.json"
     
     coco = utils.load_coco_annotations(annotations_file)
     all_detections = []
