@@ -15,7 +15,8 @@ class DetInfer(Infer):
         img = util.letter_box(img, (info["input_width"], info["input_height"]))
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = np.array(img) / 255.0
-        img = np.transpose(img, (2, 0, 1))
+        if not self.backend == "tflite":
+            img = np.transpose(img, (2, 0, 1))
         img = np.expand_dims(img, axis=0).astype(np.float32)
         return [img], info
     
@@ -31,6 +32,11 @@ class DetInfer(Infer):
                 x, y, w, h = outputs[i][:4]
                 x1 = x - w / 2
                 y1 = y - h / 2
+                if self.backend == "tflite" or self.backend == "onnx":
+                    x1 = x1 * info["input_width"]
+                    y1 = y1 * info["input_height"]
+                    w = w * info["input_width"]
+                    h = h * info["input_height"]
                 boxes.append([x1, y1, w, h])
                 scores.append(max_score)
                 class_id = np.argmax(classes_scores)
