@@ -1,91 +1,120 @@
-import numpy as np
 import tensorflow as tf
-from PIL import Image, ImageDraw
-import glob
+from config import COCO_CLASSES
+from PIL import Image
+import numpy as np
 import cv2
+from PIL import ImageDraw
+import glob
+import os
 
-# Load the TFLite model
-interpreter = tf.lite.Interpreter(model_path="saved_model/yolov8n_full_integer_quant.tflite")
-interpreter.allocate_tensors()
+class Infer:
+    def __init__(self, saved_model_path, mode="int8",input_sizes=(640, 640)):
+        if mode == "float32":
+            model_path = os.path.join(saved_model_path, "yolov8n_float32.tflite")
+        elif mode == "int8":
+            model_path = os.path.join(saved_model_path, "yolov8n_full_integer_quant.tflite")
+        else:
+            model_path = os.path.join(saved_model_path, "yolov8n_full_integer_quant_with_int16_act.tflite")
+        
+        self.interpreter = tf.lite.Interpreter(model_path=model_path)
+        self.interpreter.allocate_tensors()
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
+        self.input_sizes = input_sizes
+        self.mode = mode
 
-# Get input and output tensors
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-print(input_details)
-print(output_details)
+    def infer(self, image_path, visualize=False):
+        image_array = self.preprocess_image(image_path)
+        
+        # quantize input if it's int8 or int16
+        if self.mode == "int8":
+            image_array = self.quantize_input(image_array, self.input_details)
+        elif self.mode == "int16":
+            image_array = self.quantize_input(image_array, self.input_details, dtype=np.int16)
+            
+        self.interpreter.set_tensor(self.input_details[0]['index'], image_array)
+        self.interpreter.invoke()
+        output = self.interpreter.get_tensor(self.output_details[0]['index'])
+        
+        # dequantize output if it's int8 or int16
+        if self.mode == "int8":
+            output = self.dequantize_output(output, self.output_details)
+        elif self.mode == "int16":
+            output = self.dequantize_output(output, self.output_details)
+            
+        boxes, class_ids, confidences = self.process_output(output)
 
-# Function to preprocess the image
-def preprocess_image(image_path, input_details):
-    input_shape = input_details[0]['shape']
-    image = Image.open(image_path)
-    image = image.resize((input_shape[1], input_shape[2]))
-    image_array = np.array(image).astype(np.float32)
+        return boxes, class_ids, confidences
     
-    image_array = (image_array / 255.0)
-    image_array = np.expand_dims(image_array, axis=0)
-    return image_array
+    # Function to preprocess the image
+    def preprocess_image(self, image_path):
+        image = Image.open(image_path)
+        image = image.resize(self.input_sizes)  # Resize to model input size
+        image_array = np.array(image).astype(np.float32)
+        image_array = image_array / 255.0  # Normalize to [0, 1]
+        image_array = np.expand_dims(image_array, axis=0)  # Add batch dimension
+        return image_array
 
-def quantize_input(image_array, input_details):
-    scale, zero_point = input_details[0]['quantization']    
-    image_array_int8 = (image_array / scale + zero_point).astype(np.int8)
-    return image_array_int8
-
-def inference(image_array):
-    interpreter.set_tensor(input_details[0]['index'], image_array)
-    interpreter.invoke()
-    output = interpreter.get_tensor(output_details[0]['index'])
-    return output
-
-# Function to dequantize the output
-def dequantize_output(output, output_details):
-    scale, zero_point = output_details[0]['quantization']
-    return (output.astype(np.float32) - zero_point) * scale
-
-# Function to visualize the output (assuming object detection task)
-def visualize_output(image_path, output):
-    image = Image.open(image_path).resize((352, 352))
-    draw = ImageDraw.Draw(image)
+    def process_output(self, output, conf_threshold=0.4, iou_threshold=0.45):
+        output = output[0].transpose((1, 0))  # Transpose to 8004x84
+        boxes = output[:, :4]  # x, y, w, h
+        scores = output[:, 4:]  # class scores
+        
+        class_ids = np.argmax(scores, axis=1)
+        confidences = np.max(scores, axis=1)
+        
+        mask = confidences > conf_threshold
+        boxes = boxes[mask]
+        class_ids = class_ids[mask]
+        confidences = confidences[mask]
+        
+        # Convert to corner coordinates
+        boxes[:, :2] -= boxes[:, 2:] / 2
+        boxes[:, 2:] += boxes[:, :2]
+        
+        indices = cv2.dnn.NMSBoxes(
+            boxes.tolist(), confidences.tolist(), conf_threshold, iou_threshold
+        )
+        
+        return boxes[indices], class_ids[indices], confidences[indices]
     
-    draw = ImageDraw.Draw(image)
+    def quantize_input(self, image_array, input_details, dtype=np.int8):
+        scale, zero_point = input_details[0]['quantization']    
+        image_array_int = (image_array / scale + zero_point).astype(dtype)
+        return image_array_int
     
-    # Apply NMS
-    boxes = output[:, :4]
-    scores = output[:, 4]
-    indices = cv2.dnn.NMSBoxes(boxes.tolist(), scores.tolist(), 0.5, 0.4)
+    # Function to dequantize the output
+    def dequantize_output(self, output, output_details):
+        scale, zero_point = output_details[0]['quantization']
+        return (output.astype(np.float32) - zero_point) * scale
     
-    for index in indices:
-        i = index[0] if isinstance(index, np.ndarray) else index
-        detection = output[i]
-        if detection[4] > 0.5:  # Confidence threshold
-            x1, y1, x2, y2 = detection[:4]
-            x1, y1 = int(x1), int(y1)
-            x2, y2 = int(x2), int(y2)
+    # Function to visualize the output
+    def visualize_output(self, image_path, boxes, class_ids, confidences, save_img=False):
+        image = Image.open(image_path)
+        original_size = image.size
+        draw = ImageDraw.Draw(image)
+
+        for box, class_id, score in zip(boxes, class_ids, confidences):
+            print(box)
+            x1, y1, x2, y2 = box
+            # Scale coordinates to original image size
+            x1 = x1 * original_size[0] # / 640
+            y1 = y1 * original_size[1] # / 640
+            x2 = x2 * original_size[0] # / 640
+            y2 = y2 * original_size[1] # / 640
+            
             draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
+            draw.text((x1, y1), f"{COCO_CLASSES[int(class_id)]}: {score:.2f}", fill="red")
+        
+        if save_img:
+            image.save(f"{self.mode}_output/output_{image_path.split('/')[-1]}")
+        else:
+            image.show()
     
-    return image
-
-# Process all images in a directory
-image_paths = glob.glob("/media/vincent/FAFC59F8FC59B01D/datasets/coco_minitrain_25k/images/train2017/*.jpg")[:100]
-for image_path in image_paths:
-    # Preprocess image
-    image_array = preprocess_image(image_path, input_details)
-
-    # Quantize input
-    image_array_int8 = quantize_input(image_array, input_details)
-    
-    # Perform inference
-    outputs = inference(image_array_int8)
-    
-    # Dequantize the output
-    dequantized_outputs = dequantize_output(outputs, output_details)
-    
-    print(dequantized_outputs.shape)
-    
-    # Visualize output
-    result_image = visualize_output(image_path, dequantized_outputs)
-    
-    # Save or display the result
-    result_image.save(f"int8_output/output_{image_path.split('/')[-1]}_int8.jpg")
-    # Alternatively, use result_image.show() to display the image
-    
-print("Inference and visualization complete.")
+if __name__ == "__main__":
+    infer = Infer("onnx2tf_yolov8n_saved_model", mode="int8")
+    # Process all images in a directory
+    image_paths = glob.glob("/media/vincent/FAFC59F8FC59B01D/datasets/coco_minitrain_25k/images/train2017/*.jpg")[:10]
+    for image_path in image_paths:
+        boxes, class_ids, confidences = infer.infer(image_path, visualize=True)
+        infer.visualize_output(image_path, boxes, class_ids, confidences, save_img=True)
