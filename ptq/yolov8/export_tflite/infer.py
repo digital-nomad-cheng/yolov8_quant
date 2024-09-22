@@ -6,6 +6,9 @@ import cv2
 from PIL import ImageDraw
 import glob
 import os
+import utils
+from tqdm import tqdm
+import json
 
 class Infer:
     def __init__(self, saved_model_path, mode="int8",input_sizes=(640, 640)):
@@ -48,14 +51,15 @@ class Infer:
     
     # Function to preprocess the image
     def preprocess_image(self, image_path):
-        image = Image.open(image_path)
+        image = Image.open(image_path).convert("RGB")
+        self.original_size = image.size
         image = image.resize(self.input_sizes)  # Resize to model input size
         image_array = np.array(image).astype(np.float32)
         image_array = image_array / 255.0  # Normalize to [0, 1]
         image_array = np.expand_dims(image_array, axis=0)  # Add batch dimension
         return image_array
 
-    def process_output(self, output, conf_threshold=0.4, iou_threshold=0.45):
+    def process_output(self, output, conf_threshold=0.2, iou_threshold=0.4):
         output = output[0].transpose((1, 0))  # Transpose to 8004x84
         boxes = output[:, :4]  # x, y, w, h
         scores = output[:, 4:]  # class scores
@@ -71,6 +75,10 @@ class Infer:
         # Convert to corner coordinates
         boxes[:, :2] -= boxes[:, 2:] / 2
         boxes[:, 2:] += boxes[:, :2]
+        boxes[:, 0] = boxes[:, 0] * self.original_size[0]
+        boxes[:, 1] = boxes[:, 1] * self.original_size[1]
+        boxes[:, 2] = boxes[:, 2] * self.original_size[0]
+        boxes[:, 3] = boxes[:, 3] * self.original_size[1]
         
         indices = cv2.dnn.NMSBoxes(
             boxes.tolist(), confidences.tolist(), conf_threshold, iou_threshold
@@ -95,13 +103,7 @@ class Infer:
         draw = ImageDraw.Draw(image)
 
         for box, class_id, score in zip(boxes, class_ids, confidences):
-            print(box)
             x1, y1, x2, y2 = box
-            # Scale coordinates to original image size
-            x1 = x1 * original_size[0] # / 640
-            y1 = y1 * original_size[1] # / 640
-            x2 = x2 * original_size[0] # / 640
-            y2 = y2 * original_size[1] # / 640
             
             draw.rectangle([x1, y1, x2, y2], outline="red", width=2)
             draw.text((x1, y1), f"{COCO_CLASSES[int(class_id)]}: {score:.2f}", fill="red")
@@ -114,7 +116,22 @@ class Infer:
 if __name__ == "__main__":
     infer = Infer("onnx2tf_yolov8n_saved_model", mode="int8")
     # Process all images in a directory
-    image_paths = glob.glob("/media/vincent/FAFC59F8FC59B01D/datasets/coco_minitrain_25k/images/train2017/*.jpg")[:10]
-    for image_path in image_paths:
+    image_paths = glob.glob("/home/vincent/Work/model_optimization/yolov8_quant/ptq/datasets/coco2017/val2017/*.jpg")
+    annotations_file = "/home/vincent/Work/model_optimization/yolov8_quant/ptq/datasets/coco2017/annotations/instances_val2017.json"
+    # image_paths = glob.glob("/media/vincent/FAFC59F8FC59B01D/datasets/coco16/images/train2017/*.jpg")
+    # annotations_file = "/media/vincent/FAFC59F8FC59B01D/datasets/coco16/annotations/instances_train2017.json"
+    
+    with open(annotations_file, "r") as fp_gt:
+        gt_data = json.load(fp_gt)
+    print(gt_data["categories"])
+    coco = utils.load_coco_annotations(annotations_file)
+    all_detections = []
+    for image_path in tqdm(image_paths):
+        image_id = int(os.path.basename(image_path).split('.')[0])
         boxes, class_ids, confidences = infer.infer(image_path, visualize=True)
         infer.visualize_output(image_path, boxes, class_ids, confidences, save_img=True)
+        coco_detections = utils.convert_to_coco_format(image_id, boxes, class_ids, confidences, gt_data["categories"])
+        all_detections.extend(coco_detections)
+    
+    metrics = utils.calculate_coco_metrics(coco, all_detections)
+    print(metrics)
