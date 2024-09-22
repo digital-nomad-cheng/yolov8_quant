@@ -2,7 +2,7 @@ import cv2
 import glob
 import numpy as np
 
-files = glob.glob("/media/vincent/FAFC59F8FC59B01D/datasets/coco_minitrain_25k/images/train2017/*.jpg")[:1000]
+files = glob.glob("/media/vincent/FAFC59F8FC59B01D/datasets/coco_minitrain_25k/images/train2017/*.jpg")[:10]
 img_datas = []
 for idx, file in enumerate(files):
     bgr_img = cv2.imread(file)
@@ -12,11 +12,11 @@ for idx, file in enumerate(files):
     normalized_img = extend_batch_size_img / 255.0 
     print(
         f'{str(idx+1).zfill(2)}. extend_batch_size_img.shape: {extend_batch_size_img.shape}'
-    ) # [1,112,200,3]
-    img_datas.append(normalized_img)
+    )
+    img_datas.append(normalized_img.astype(np.float32))
 calib_datas = np.vstack(img_datas)
-print(f'calib_datas.shape: {calib_datas.shape}') # [10,112,200,3]
+print(f'calib_datas.shape: {calib_datas.shape}')
 np.save(file='data/calibdata.npy', arr=calib_datas)
 
 loaded_data = np.load('data/calibdata.npy')
-print(f'loaded_data.shape: {loaded_data.shape}') # [10,112,200,3]
+print(f'loaded_data.shape: {loaded_data.shape}')
