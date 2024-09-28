@@ -6,4 +6,6 @@
 - [x] Use a new onnx model which outputs normalized box value. 22/Sep
 - [ ] Get new tensorrt model with new onnx model
 - [ ] Improve tensorflow lite performance with better quantization strategies
+- [ ] Overrite weights with weight_clip_val.json and weight equalization method.
+- [x] Calculate scale and zero_point with act_clip_val.
 
