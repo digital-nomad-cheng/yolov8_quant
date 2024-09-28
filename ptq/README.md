@@ -47,6 +47,8 @@
 6. Use dirpoorlet to calibrate 
     ```
     python -m torch.distributed.launch --nproc_per_node 1 --use_env -m dipoorlet -I dipoorlet_work_dir/ -N 1024 -D trt -M weights/yolov8n.onnx -A mse -D trt -O yolov8n_mse
+    # use brecq 
+    python -m torch.distributed.launch --nproc_per_node 1 --use_env -m dipoorlet -I dipoorlet_work_dir/input.1/ -N 100 -D trt -M weights/yolov8n.onnx -A mse --brecq -D trt -O yolov8n_mse_brecq_n100
     ```
 7. Write new trt engine file with generated parameters from dipoorlet
     ```
