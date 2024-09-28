@@ -54,6 +54,8 @@
     ```
 8. Evaluate new trt engine performance
     ```
+    # change the tensorrt engine file to the new generated with dipoorlet dynamic range
+    python eval_tensorrt.py
     ```
 6. Table for performance comparison, due to the long time of calibration, I only use 10 images for calibration to produce the table below. 
     Time is measured on 5000 evaluation images.
