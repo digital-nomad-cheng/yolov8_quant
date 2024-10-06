@@ -32,11 +32,11 @@ class DetInfer(Infer):
                 x, y, w, h = outputs[i][:4]
                 x1 = x - w / 2
                 y1 = y - h / 2
-                if self.backend == "tflite" or self.backend == "onnx":
-                    x1 = x1 * info["input_width"]
-                    y1 = y1 * info["input_height"]
-                    w = w * info["input_width"]
-                    h = h * info["input_height"]
+
+                x1 = x1 * info["input_width"]
+                y1 = y1 * info["input_height"]
+                w = w * info["input_width"]
+                h = h * info["input_height"]
                 boxes.append([x1, y1, w, h])
                 scores.append(max_score)
                 class_id = np.argmax(classes_scores)

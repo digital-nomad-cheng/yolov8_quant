@@ -1,5 +1,7 @@
 import tensorrt as trt
 import os
+import sys
+sys.path.append('.')
 from calibrator import TRTCalibrator, TRTCalibDataLoader
 import config 
 
@@ -37,7 +39,7 @@ def buildEngine(
 def main(mode):
     onnx_file = config.onnx_model_path
     engine_file = f"/workspace/ptq/yolov8/weights/yolov8n_{mode}.engine"
-    calibration_cache = "/workspace/ptq/yolov8/yolov8n_calib.cache"
+    calibration_cache = "/workspace/ptq/yolov8/workdir/yolov8n_calib.cache"
 
     if mode=='fp16':
         FP16_mode = True

@@ -32,9 +32,26 @@
    bash download_coco17_val.sh
    ```
 2. Export yolov8n.onnx model file.
+    ```
+    # Note this script will use the intermediate onnx file generated when exporting tflite file
+    python export_onnx.py 
+    ```
 3. Evaluate onnx model performance on coco evaluation dataset.
    ```
    python eval_onnx.py
+   # Results
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.359
+    Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.506
+    Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.389
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.169
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.396
+    Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.509
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.291
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.475
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.521
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.294
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.580
+    Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.671
    ```
 4. Build tensorrt engine file with default quantization strategy.
     ```
@@ -47,6 +64,8 @@
 6. Use dirpoorlet to calibrate 
     ```
     python -m torch.distributed.launch --nproc_per_node 1 --use_env -m dipoorlet -I dipoorlet_work_dir/ -N 1024 -D trt -M weights/yolov8n.onnx -A mse -D trt -O yolov8n_mse
+    # use brecq 
+    python -m torch.distributed.launch --nproc_per_node 1 --use_env -m dipoorlet -I dipoorlet_work_dir/input.1/ -N 100 -D trt -M weights/yolov8n.onnx -A mse --brecq -D trt -O yolov8n_mse_brecq_n100
     ```
 7. Write new trt engine file with generated parameters from dipoorlet
     ```
