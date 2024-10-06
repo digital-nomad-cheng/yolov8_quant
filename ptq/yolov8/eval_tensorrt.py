@@ -3,13 +3,26 @@ from pycocotools.coco import COCO
 import os
 import json
 import time
+import argparse
 
 import config
 from det_infer import DetInfer
 import util 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Evaluate TensorRT model")
+    parser.add_argument("--dipoorlet", type=str, default=config.tensorrt_dipoorlet_model_path, help="Path to the TensorRT model")
+    return parser.parse_args()
+
+args = parse_args()
+
+if args.dipoorlet:
+    model_path = config.tensorrt_dipoorlet_model_path
+else:
+    model_path = config.tensorrt_model_path
+
 # Load model, initialize inference engine
-det_infer = DetInfer(config.tensorrt_model_path, "tensorrt")
+det_infer = DetInfer(model_path, "tensorrt")
 det_infer.load_model(config.info)
 
 
@@ -60,7 +73,7 @@ for img_idx in range(len(images)):
 t_end = time.time()
 logger.info(f"tensorrt inference time: {t_end - t_start} for {len(images)} images.")
 
-with open("./tensorrt_res.json", "w") as fp_out:
+with open("./workdir/tensorrt_res.json", "w") as fp_out:
     json.dump(detection_out_dict, fp_out, ensure_ascii=False, indent=4)
 
-util.print_coco_map(config.coco_anno_file, "./tensorrt_res.json")
+util.print_coco_map(config.coco_anno_file, "./workdir/tensorrt_res.json")
