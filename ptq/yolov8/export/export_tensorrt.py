@@ -1,5 +1,7 @@
 import tensorrt as trt
 import os
+import sys
+sys.path.append('.')
 from calibrator import TRTCalibrator, TRTCalibDataLoader
 import config 
 
