@@ -32,6 +32,10 @@
    bash download_coco17_val.sh
    ```
 2. Export yolov8n.onnx model file.
+    ```
+    # Note this script will use the intermediate onnx file generated when exporting tflite file
+    python export_onnx.py 
+    ```
 3. Evaluate onnx model performance on coco evaluation dataset.
    ```
    python eval_onnx.py
