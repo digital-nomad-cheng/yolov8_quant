@@ -5,7 +5,7 @@ import cv2
 
 from onnx_backend import load_onnx_model, run_onnx_model
 from tensorrt_backend import load_tensorrt_model, run_tensorrt_model
-
+from tflite_backend import load_tflite_model, run_tflite_model
 
 class Infer(metaclass=ABCMeta):
     """
@@ -25,6 +25,9 @@ class Infer(metaclass=ABCMeta):
         elif self.backend == "tensorrt":
             self.infer_model_func = run_tensorrt_model
             self.load_model_func = load_tensorrt_model
+        elif self.backend == "tflite":
+            self.infer_model_func = run_tflite_model
+            self.load_model_func = load_tflite_model
         else:
             raise Exception(f"Not supported {self.backend} backend.")
 
