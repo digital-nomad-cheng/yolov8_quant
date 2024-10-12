@@ -13,7 +13,7 @@ def calculate_scale_zero_point(min_val, max_val, num_bits=8):
     return scale, zero_point
 
 # Load the activation clip values
-with open("yolov8n_mse_n100/act_clip_val.json", "r") as f:
+with open("dipoorlet_work_dir/yolov8n_mse/act_clip_val.json", "r") as f:
     act_clip_val = json.load(f)
 
 quant_params = {}
@@ -30,7 +30,7 @@ for layer_name, clip_values in act_clip_val.items():
     }
 
 # Write quantization parameters to a new JSON file
-with open("act_quant_params.json", "w") as f:
+with open("scale_and_zeropoint_params.json", "w") as f:
     json.dump(quant_params, f, indent=2)
 
-print("Activation quantization parameters have been written to act_quant_params.json")
+print("Activation quantization parameters have been written to scale_and_zeropoint_params.json")
