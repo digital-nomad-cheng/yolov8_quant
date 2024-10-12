@@ -1,10 +1,14 @@
 
 onnx_model_path = "/workspace/ptq/yolov8/weights/yolov8n.onnx"
 tensorrt_model_path = "/workspace/ptq/yolov8/weights/yolov8n_int8.engine"
-tensorrt_dipoorlet_model_path = "/workspace/ptq/yolov8/weights/yolov8n_dipoorlet_int8.engine"
+tensorrt_dipoorlet_model_path = "/workspace/ptq/yolov8/weights/yolov8n_mse_int8.engine"
+tflite_model_path = "/workspace/ptq/yolov8/weights/yolov8n_full_integer_quant.tflite"
 
 coco_val_path = "/workspace/ptq/datasets/coco2017/val2017/"
 coco_anno_file = "/workspace/ptq/datasets/coco2017/annotations/instances_val2017.json"
+mini_coco_val_path = "/workspace/ptq/datasets/coco16/images/train2017"
+mini_coco_anno_file = "/workspace/ptq/datasets/coco16/annotations/instances_train2017.json"
+dipoorlet_work_dir = "/workspace/ptq/yolov8/dipoorlet_work_dir"
 dipoorlet_cali_dataset_path = "/workspace/ptq/yolov8/dipoorlet_work_dir/input.1/"
 
 class_names = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train',
