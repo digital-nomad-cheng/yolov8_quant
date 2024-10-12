@@ -1,4 +1,4 @@
-## MobileNetv2 on tiny-imagenet-200
+## MobileNetv2 on tiny-imagenet-200 with TensorRT
 1. Download tiny-imagenet dataset from:  http://cs231n.stanford.edu/tiny-imagenet-200.zip
 2. Prepare the transformed dataset into binary format from numpy array, in `mnv2` directory, 
     run `prepare_cali_dataset.py`
@@ -26,7 +26,7 @@
     | Dipoorlet MSE int8| 66.4%| |
     | Dipoorlet MSE+Brecq|
     
-## YOLOv8n on coco-2017-val
+## YOLOv8n on coco-2017-val with TensorRT
 1. Download COCO 2017 validation dataset:
    ```
    bash download_coco17_val.sh
