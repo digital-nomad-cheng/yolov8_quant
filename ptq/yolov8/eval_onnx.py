@@ -61,8 +61,8 @@ for img_idx in range(len(images)):
 t_end = time.time()
 logger.info(f"onnx inference time: {t_end - t_start} for {len(images)} images.")
 
-with open("./onnx_res.json", "w") as fp_out:
+with open("./workdir/onnx_res.json", "w") as fp_out:
     json.dump(detection_out_dict, fp_out, ensure_ascii=False, indent=4)
 
 
-util.print_coco_map(config.coco_anno_file, "./onnx_res.json")
+util.print_coco_map(config.coco_anno_file, "./workdir/onnx_res.json")
