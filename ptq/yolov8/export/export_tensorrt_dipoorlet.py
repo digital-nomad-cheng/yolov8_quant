@@ -1,5 +1,7 @@
 import tensorrt as trt
 import os
+import sys
+sys.path.append('.')
 import json
 
 import config
@@ -62,7 +64,7 @@ def buildEngine(onnx_file, engine_file, json_path):
 def main():
     onnx_file = config.onnx_model_path
     engine_file = config.tensorrt_dipoorlet_model_path
-    json_path = "yolov8n_mse/trt_clip_val.json"    
+    json_path = "dipoorlet_work_dir/yolov8n_mse/trt_clip_val.json"    
 
     if not os.path.exists(onnx_file):
         print("LOAD ONNX FILE FAILED: ", onnx_file)
